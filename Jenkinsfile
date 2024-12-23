@@ -22,7 +22,7 @@ pipeline {
                 // Install SnowCLI and make sure it's accessible
                 sh '''
                 python3 -m pip install --upgrade pip
-                python3 -m pip install snowcli==${SNOWCLI_VERSION}
+                python3 -m pip install snowcli
 
                 # Get the path to SnowCLI
                 SNOWCLI_PATH=$(python3 -m site --user-base)/bin
@@ -77,4 +77,3 @@ pipeline {
         }
     }
 }
-
