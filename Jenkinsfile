@@ -21,7 +21,8 @@ pipeline {
             steps {
                 // Install SnowCLI
                 sh '''
-                pip install snowcli
+                python3 -m pip install --upgrade pip
+                python3 -m pip install snowcli==${SNOWCLI_VERSION}
                 '''
             }
         }
