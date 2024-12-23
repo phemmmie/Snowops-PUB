@@ -22,7 +22,7 @@ pipeline {
                 // Install SnowCLI
                 sh '''
                 python3 -m pip install --upgrade pip
-                python3 -m pip install snowcli==${SNOWCLI_VERSION}
+                python3 -m pip install snowcli
                 '''
             }
         }
