@@ -17,19 +17,20 @@ pipeline {
                     url: 'https://github.com/phemmmie/Snowops-PUB.git'
             }
         }
-        stage('Setup Virtual Environment and Install SnowCLI') {
+        stage('Install SnowCLI') {
             steps {
-                // Create and activate a virtual environment, then install SnowCLI
+                // Install SnowCLI and make sure it's accessible
                 sh '''
-                python3 -m venv venv
-                source venv/bin/activate
+                python3 -m pip install --upgrade pip
+                python3 -m pip install snowcli==${SNOWCLI_VERSION}
 
-                # Upgrade pip and install SnowCLI
-                pip install --upgrade pip
-                pip install snowcli==${SNOWCLI_VERSION}
+                # Get the path to SnowCLI
+                SNOWCLI_PATH=$(python3 -m site --user-base)/bin
+                echo "Adding SnowCLI path: $SNOWCLI_PATH to PATH"
+                export PATH=$SNOWCLI_PATH:$PATH
 
-                # Test SnowCLI installation
-                venv/bin/snow --version
+                # Test if snow is accessible
+                snow --version
                 '''
             }
         }
@@ -37,15 +38,15 @@ pipeline {
             steps {
                 // Configure SnowCLI for Snowflake Authentication
                 sh '''
-                source venv/bin/activate
+                SNOWCLI_PATH=$(python3 -m site --user-base)/bin
+                export PATH=$SNOWCLI_PATH:$PATH
 
-                # Use SnowCLI to configure authentication
-                venv/bin/snow configure set account ${SNOWFLAKE_ACCOUNT}
-                venv/bin/snow configure set user ${SNOWFLAKE_USER}
-                venv/bin/snow configure set role ${SNOWFLAKE_ROLE}
-                venv/bin/snow configure set warehouse ${SNOWFLAKE_WAREHOUSE}
-                venv/bin/snow configure set database ${SNOWFLAKE_DATABASE}
-                venv/bin/snow configure set schema ${SNOWFLAKE_SCHEMA}
+                snow configure set account ${SNOWFLAKE_ACCOUNT}
+                snow configure set user ${SNOWFLAKE_USER}
+                snow configure set role ${SNOWFLAKE_ROLE}
+                snow configure set warehouse ${SNOWFLAKE_WAREHOUSE}
+                snow configure set database ${SNOWFLAKE_DATABASE}
+                snow configure set schema ${SNOWFLAKE_SCHEMA}
                 '''
             }
         }
@@ -57,8 +58,10 @@ pipeline {
                     for (file in sqlFiles) {
                         echo "Executing ${file}"
                         sh '''
-                        source venv/bin/activate
-                        venv/bin/snow sql -f ${file}
+                        SNOWCLI_PATH=$(python3 -m site --user-base)/bin
+                        export PATH=$SNOWCLI_PATH:$PATH
+                        
+                        snow sql -f ${file}
                         '''
                     }
                 }
