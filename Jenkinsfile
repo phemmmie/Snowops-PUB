@@ -1,7 +1,6 @@
 pipeline {
     agent any
     environment {
-        SNOWCLI_VERSION = "1.1.0"
         SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
@@ -26,7 +25,7 @@ pipeline {
 
                 # Upgrade pip and install SnowCLI
                 pip install --upgrade pip
-                pip install snowcli==${SNOWCLI_VERSION}
+                pip install snowcli
 
                 # Test SnowCLI installation
                 venv/bin/snow --version
