@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SNOWCLI_VERSION = "1.1.0" // Specify the desired SnowCLI version
-        SNOWFLAKE_ACCOUNT = 'OO62075'
+        SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
         SNOWFLAKE_WAREHOUSE = 'COMPUTE_WH'
