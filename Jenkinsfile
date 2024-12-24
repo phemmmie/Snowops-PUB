@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        SNOWCLI_VERSION = "0.1.1" // Use a valid version or leave empty for latest
+        SNOWCLI_VERSION = "0.1.1" // Use a valid version
         SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
@@ -17,7 +17,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/phemmmie/Snowops-PUB.git',
-                    credentialsId: 'your-credentials-id'
+                    credentialsId: 'github-credentials'
             }
         }
         stage('Setup Virtual Environment and Install SnowCLI') {
@@ -25,9 +25,9 @@ pipeline {
                 sh '''
                 python3 -m venv venv
                 source venv/bin/activate
+                export PATH=$VIRTUAL_ENV/bin:$PATH
                 pip install --upgrade pip
-                pip install snowcli==${SNOWCLI_VERSION} || pip install snowcli  # Fallback to latest
-                pip list  # Debug: Verify installation
+                pip install snowcli==${SNOWCLI_VERSION}
                 which snow  # Debug: Locate executable
                 snow --version  # Verify SnowCLI installation
                 '''
@@ -70,3 +70,4 @@ pipeline {
         }
     }
 }
+
