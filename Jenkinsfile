@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        SNOWCLI_VERSION = "1.1.0" // Update this to the correct version
+        SNOWCLI_VERSION = "0.1.1" // Use a valid version or leave empty for latest
         SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
@@ -9,11 +9,15 @@ pipeline {
         SNOWFLAKE_DATABASE = 'PEDWUK_TB'
         SNOWFLAKE_SCHEMA = 'DDE_OPS'
     }
+    tools {
+        git 'Default' // Use the configured Git installation
+    }
     stages {
         stage('Checkout SQL Scripts from GitHub') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/phemmmie/Snowops-PUB.git'
+                    url: 'https://github.com/phemmmie/Snowops-PUB.git',
+                    credentialsId: 'your-credentials-id'
             }
         }
         stage('Setup Virtual Environment and Install SnowCLI') {
@@ -22,7 +26,7 @@ pipeline {
                 python3 -m venv venv
                 source venv/bin/activate
                 pip install --upgrade pip
-                pip install snowcli==${SNOWCLI_VERSION}
+                pip install snowcli==${SNOWCLI_VERSION} || pip install snowcli  # Fallback to latest
                 pip list  # Debug: Verify installation
                 which snow  # Debug: Locate executable
                 snow --version  # Verify SnowCLI installation
