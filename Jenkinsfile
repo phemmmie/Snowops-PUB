@@ -41,7 +41,7 @@ pipeline {
                         echo "Executing ${sqlFilePath}..."
                         sh """
                         snowsql --config $SNOWSQL_CONFIG_PATH \
-                                --execute @${sqlFilePath}
+                                -f ${sqlFilePath}
                         """
                     } else {
                         error "SQL file ${sqlFile} not found in the workspace!"
