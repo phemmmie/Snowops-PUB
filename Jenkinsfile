@@ -1,7 +1,8 @@
 pipeline {
     agent any
     environment {
-        SNOWCLI_VERSION = "0.1.1" // Ensure this version exists
+        SNOWSQL_VERSION = "latest" // Ensure this version exists
+        SNOWSQL_CONFIG_FILE = ".snowsql" // Default configuration file location
         SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
@@ -17,43 +18,46 @@ pipeline {
                     credentialsId: 'github-credentials'
             }
         }
-        stage('Setup Virtual Environment and Install SnowCLI') {
+        stage('Install SnowSQL') {
             steps {
                 sh '''
-                python3 -m venv venv
-                source venv/bin/activate
-                export PATH=$VIRTUAL_ENV/bin:$PATH
-                pip install --upgrade pip
-                if ! pip install --force-reinstall snowcli==${SNOWCLI_VERSION}; then
-                    echo "SnowCLI installation failed. Please verify the version."
-                    exit 1
+                # Install SnowSQL if not already installed
+                if ! command -v snowsql &> /dev/null; then
+                    echo "Installing SnowSQL..."
+                    curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/snowsql.dmg
+                    hdiutil attach snowsql.dmg
+                    sudo installer -pkg /Volumes/SnowSQL/snowsql.pkg -target /
+                    hdiutil detach /Volumes/SnowSQL
+                else
+                    echo "SnowSQL is already installed."
                 fi
-                echo "PATH after activation: $PATH"  # Debug PATH
-                ls -l $VIRTUAL_ENV/bin  # Verify the existence of 'snowcli' executable
-                if ! [ -x "$VIRTUAL_ENV/bin/snowcli" ]; then
-                    echo "SnowCLI executable not found in expected location. Installation might have failed."
-                    exit 1
-                fi
-                $VIRTUAL_ENV/bin/snowcli --version  # Verify SnowCLI installation
+                # Verify installation
+                snowsql --version
                 '''
             }
         }
-        stage('Setup Snowflake Authentication') {
+        stage('Configure SnowSQL') {
             steps {
                 sh '''
-                source venv/bin/activate
-                $VIRTUAL_ENV/bin/snowcli configure set account ${SNOWFLAKE_ACCOUNT}
-                $VIRTUAL_ENV/bin/snowcli configure set user ${SNOWFLAKE_USER}
-                $VIRTUAL_ENV/bin/snowcli configure set role ${SNOWFLAKE_ROLE}
-                $VIRTUAL_ENV/bin/snowcli configure set warehouse ${SNOWFLAKE_WAREHOUSE}
-                $VIRTUAL_ENV/bin/snowcli configure set database ${SNOWFLAKE_DATABASE}
-                $VIRTUAL_ENV/bin/snowcli configure set schema ${SNOWFLAKE_SCHEMA}
+                # Create or overwrite SnowSQL configuration file
+                mkdir -p ~/.snowsql
+                cat <<EOF > ~/.snowsql/config
+[connections]
+accountname = ${SNOWFLAKE_ACCOUNT}
+username = ${SNOWFLAKE_USER}
+rolename = ${SNOWFLAKE_ROLE}
+warehousename = ${SNOWFLAKE_WAREHOUSE}
+dbname = ${SNOWFLAKE_DATABASE}
+schemaname = ${SNOWFLAKE_SCHEMA}
+EOF
+                chmod 600 ~/.snowsql/config
                 '''
             }
         }
         stage('Execute SQL Statements') {
             steps {
                 script {
+                    // List all SQL files in the workspace
                     def sqlFiles = sh(script: 'ls *.sql || echo ""', returnStdout: true).trim().split('\n')
                     if (sqlFiles.size() == 0 || sqlFiles[0] == "") {
                         echo "No SQL files found in the workspace."
@@ -62,8 +66,7 @@ pipeline {
                     for (file in sqlFiles) {
                         echo "Executing ${file}"
                         sh """
-                        source venv/bin/activate
-                        $VIRTUAL_ENV/bin/snowcli sql -f ${file}
+                        snowsql -f ${file}
                         """
                     }
                 }
