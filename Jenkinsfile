@@ -4,24 +4,6 @@ pipeline {
         SNOWSQL_CONFIG_PATH = '/Users/Shared/.snowsql'
     }
     stages {
-        stage('Setup Environment') {
-            steps {
-                echo 'Installing SnowSQL via Homebrew...'
-                sh '''
-                if ! command -v snowsql &> /dev/null; then
-                    # Ensure Homebrew is installed
-                    if ! command -v brew &> /dev/null; then
-                        echo "Installing Homebrew..."
-                        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-                    fi
-
-                    echo "Installing SnowSQL..."
-                    brew install --cask snowflake-snowsql
-                fi
-                '''
-                echo 'SnowSQL installation complete.'
-            }
-        }
         stage('Clone SQL Repository') {
             steps {
                 echo 'Cloning GitHub repository with SQL scripts...'
