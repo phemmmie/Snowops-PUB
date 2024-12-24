@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        SNOWSQL_INSTALLER_URL = 'https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql'
+        SNOWSQL_INSTALLER_URL = 'https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql?raw=true'
         SNOWSQL_INSTALLER_PATH = '/tmp/snowsql'
         SNOWSQL_CONFIG_PATH = '/home/jenkins/.snowsql'
     }
@@ -11,7 +11,7 @@ pipeline {
                 echo 'Installing SnowSQL...'
                 sh '''
                 if ! command -v snowsql &> /dev/null; then
-                    curl -o $SNOWSQL_INSTALLER_PATH $SNOWSQL_INSTALLER_URL && chmod +x $SNOWSQL_INSTALLER_PATH && $SNOWSQL_INSTALLER_PATH -y
+                    curl -L -o $SNOWSQL_INSTALLER_PATH $SNOWSQL_INSTALLER_URL && chmod +x $SNOWSQL_INSTALLER_PATH && $SNOWSQL_INSTALLER_PATH -y
                 fi
                 '''
                 echo 'SnowSQL installation complete.'
@@ -27,7 +27,6 @@ pipeline {
             steps {
                 echo 'Executing SQL scripts on Snowflake...'
                 script {
-                    // Load SQL files from the cloned repository
                     def sqlFiles = findFiles(glob: 'sql/**/*.sql')
                     for (sqlFile in sqlFiles) {
                         sh """
