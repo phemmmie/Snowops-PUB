@@ -1,8 +1,6 @@
 pipeline {
     agent any
     environment {
-        SNOWSQL_VERSION = "latest" // Ensure this version exists
-        SNOWSQL_CONFIG_FILE = ".snowsql" // Default configuration file location
         SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
@@ -18,20 +16,24 @@ pipeline {
                     credentialsId: 'github-credentials'
             }
         }
-        stage('Install SnowSQL') {
+        stage('Install SnowSQL via Homebrew') {
             steps {
                 sh '''
-                # Install SnowSQL if not already installed
+                # Install Homebrew if not already installed
+                if ! command -v brew &> /dev/null; then
+                    echo "Installing Homebrew..."
+                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                fi
+                
+                # Install SnowSQL using Homebrew
                 if ! command -v snowsql &> /dev/null; then
                     echo "Installing SnowSQL..."
-                    curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/snowsql.dmg
-                    hdiutil attach snowsql.dmg
-                    sudo installer -pkg /Volumes/SnowSQL/snowsql.pkg -target /
-                    hdiutil detach /Volumes/SnowSQL
+                    brew install --cask snowflake-snowsql
                 else
                     echo "SnowSQL is already installed."
                 fi
-                # Verify installation
+
+                # Verify SnowSQL installation
                 snowsql --version
                 '''
             }
