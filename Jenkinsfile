@@ -1,16 +1,13 @@
 pipeline {
     agent any
     environment {
-        SNOWCLI_VERSION = "0.1.1" // Use a valid version
+        SNOWCLI_VERSION = "0.1.1" // Ensure this version exists
         SNOWFLAKE_ACCOUNT = 'uluiluz-oo62075'
         SNOWFLAKE_USER = 'DEBO2577'
         SNOWFLAKE_ROLE = 'ACCOUNTADMIN'
         SNOWFLAKE_WAREHOUSE = 'COMPUTE_WH'
         SNOWFLAKE_DATABASE = 'PEDWUK_TB'
         SNOWFLAKE_SCHEMA = 'DDE_OPS'
-    }
-    tools {
-        git 'Default' // Use the configured Git installation
     }
     stages {
         stage('Checkout SQL Scripts from GitHub') {
@@ -27,8 +24,11 @@ pipeline {
                 source venv/bin/activate
                 export PATH=$VIRTUAL_ENV/bin:$PATH
                 pip install --upgrade pip
-                pip install snowcli==${SNOWCLI_VERSION}
-                which snow  # Debug: Locate executable
+                if ! pip install snowcli==${SNOWCLI_VERSION}; then
+                    echo "SnowCLI installation failed. Please verify the version."
+                    exit 1
+                fi
+                which snow  # Debug: Locate SnowCLI executable
                 snow --version  # Verify SnowCLI installation
                 '''
             }
@@ -49,13 +49,17 @@ pipeline {
         stage('Execute SQL Statements') {
             steps {
                 script {
-                    def sqlFiles = sh(script: 'ls *.sql', returnStdout: true).trim().split('\n')
+                    def sqlFiles = sh(script: 'ls *.sql || echo ""', returnStdout: true).trim().split('\n')
+                    if (sqlFiles.size() == 0 || sqlFiles[0] == "") {
+                        echo "No SQL files found in the workspace."
+                        error "Execution stopped: No SQL files to process."
+                    }
                     for (file in sqlFiles) {
                         echo "Executing ${file}"
-                        sh '''
+                        sh """
                         source venv/bin/activate
                         snow sql -f ${file}
-                        '''
+                        """
                     }
                 }
             }
@@ -66,7 +70,7 @@ pipeline {
             echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs.'
+            echo 'Pipeline failed. Please check the logs for details.'
         }
     }
 }
