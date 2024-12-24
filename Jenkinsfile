@@ -29,12 +29,12 @@ pipeline {
                     exit 1
                 fi
                 echo "PATH after activation: $PATH"  # Debug PATH
-                ls -l $VIRTUAL_ENV/bin  # Verify the existence of 'snow' executable
-                if ! which snow; then
-                    echo "SnowCLI executable not found. Installation might have failed."
+                ls -l $VIRTUAL_ENV/bin  # Verify the existence of 'snowcli' executable
+                if ! [ -x "$VIRTUAL_ENV/bin/snowcli" ]; then
+                    echo "SnowCLI executable not found in expected location. Installation might have failed."
                     exit 1
                 fi
-                snow --version  # Verify SnowCLI installation
+                $VIRTUAL_ENV/bin/snowcli --version  # Verify SnowCLI installation
                 '''
             }
         }
@@ -42,12 +42,12 @@ pipeline {
             steps {
                 sh '''
                 source venv/bin/activate
-                snow configure set account ${SNOWFLAKE_ACCOUNT}
-                snow configure set user ${SNOWFLAKE_USER}
-                snow configure set role ${SNOWFLAKE_ROLE}
-                snow configure set warehouse ${SNOWFLAKE_WAREHOUSE}
-                snow configure set database ${SNOWFLAKE_DATABASE}
-                snow configure set schema ${SNOWFLAKE_SCHEMA}
+                $VIRTUAL_ENV/bin/snowcli configure set account ${SNOWFLAKE_ACCOUNT}
+                $VIRTUAL_ENV/bin/snowcli configure set user ${SNOWFLAKE_USER}
+                $VIRTUAL_ENV/bin/snowcli configure set role ${SNOWFLAKE_ROLE}
+                $VIRTUAL_ENV/bin/snowcli configure set warehouse ${SNOWFLAKE_WAREHOUSE}
+                $VIRTUAL_ENV/bin/snowcli configure set database ${SNOWFLAKE_DATABASE}
+                $VIRTUAL_ENV/bin/snowcli configure set schema ${SNOWFLAKE_SCHEMA}
                 '''
             }
         }
@@ -63,7 +63,7 @@ pipeline {
                         echo "Executing ${file}"
                         sh """
                         source venv/bin/activate
-                        snow sql -f ${file}
+                        $VIRTUAL_ENV/bin/snowcli sql -f ${file}
                         """
                     }
                 }
