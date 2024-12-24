@@ -1,9 +1,21 @@
 pipeline {
     agent any
     environment {
-        SNOWSQL_CONFIG_PATH = '/Users/Shared/.snowsql'
+        SNOWSQL_PATH = '/Applications/SnowSQL.app/Contents/MacOS'
+        PATH = "${SNOWSQL_PATH}:${env.PATH}" // Prepend SnowSQL path to ensure it's available
+        SNOWSQL_CONFIG_PATH = '/Users/Shared/.snowsql' // Adjust if your SnowSQL config is in a different path
     }
     stages {
+        stage('Verify SnowSQL Installation') {
+            steps {
+                echo 'Checking SnowSQL installation...'
+                sh '''
+                echo "PATH: $PATH"
+                which snowsql
+                snowsql --version
+                '''
+            }
+        }
         stage('Clone SQL Repository') {
             steps {
                 echo 'Cloning GitHub repository with SQL scripts...'
@@ -14,7 +26,7 @@ pipeline {
             steps {
                 echo 'Executing SQL scripts on Snowflake...'
                 script {
-                    def sqlFiles = findFiles(glob: 'sql/**/*.sql')
+                    def sqlFiles = findFiles(glob: 'sql/**/*.sql') // Adjust path to SQL scripts as needed
                     for (sqlFile in sqlFiles) {
                         sh """
                         snowsql --config $SNOWSQL_CONFIG_PATH \
