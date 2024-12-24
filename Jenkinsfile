@@ -26,8 +26,11 @@ pipeline {
             steps {
                 echo 'Executing SQL scripts on Snowflake...'
                 script {
-                    def sqlFiles = findFiles(glob: 'sql/**/*.sql') // Adjust path to SQL scripts as needed
-                    for (sqlFile in sqlFiles) {
+                    // List all SQL files
+                    def sqlFiles = sh(script: 'find sql -type f -name "*.sql"', returnStdout: true).trim().split("\n")
+                    
+                    // Execute each SQL file
+                    sqlFiles.each { sqlFile ->
                         sh """
                         snowsql --config $SNOWSQL_CONFIG_PATH \
                                 --account <your_account> \
@@ -36,7 +39,7 @@ pipeline {
                                 --warehouse <your_warehouse> \
                                 --database <your_database> \
                                 --schema <your_schema> \
-                                --execute @${sqlFile.path}
+                                --execute @${sqlFile}
                         """
                     }
                 }
