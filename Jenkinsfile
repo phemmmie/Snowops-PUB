@@ -24,11 +24,16 @@ pipeline {
                 source venv/bin/activate
                 export PATH=$VIRTUAL_ENV/bin:$PATH
                 pip install --upgrade pip
-                if ! pip install snowcli==${SNOWCLI_VERSION}; then
+                if ! pip install --force-reinstall snowcli==${SNOWCLI_VERSION}; then
                     echo "SnowCLI installation failed. Please verify the version."
                     exit 1
                 fi
-                which snow  # Debug: Locate SnowCLI executable
+                echo "PATH after activation: $PATH"  # Debug PATH
+                ls -l $VIRTUAL_ENV/bin  # Verify the existence of 'snow' executable
+                if ! which snow; then
+                    echo "SnowCLI executable not found. Installation might have failed."
+                    exit 1
+                fi
                 snow --version  # Verify SnowCLI installation
                 '''
             }
