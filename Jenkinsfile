@@ -16,21 +16,29 @@ pipeline {
                 '''
             }
         }
-        stage('Clone SQL Repository') {
+        stage('Clone GitHub Repository') {
             steps {
-                echo 'Cloning GitHub repository with SQL scripts...'
+                echo 'Cloning the SnowOps-PUB repository...'
                 git branch: 'main', url: 'https://github.com/phemmmie/Snowops-PUB.git'
             }
         }
-        stage('Execute SQL Scripts') {
+        stage('List Files in Workspace') {
             steps {
-                echo 'Executing SQL scripts on Snowflake...'
+                echo 'Listing files in the current workspace to check for SQL file...'
+                sh 'ls -R'
+            }
+        }
+        stage('Execute SnowSQL Script') {
+            steps {
+                echo 'Executing SQL script on Snowflake...'
                 script {
-                    // List all SQL files
-                    def sqlFiles = sh(script: 'find sql -type f -name "*.sql"', returnStdout: true).trim().split("\n")
+                    // Path to your SQL file
+                    def sqlFile = 'snow_create.sql' // The SQL file to execute
+                    def sqlFilePath = "${pwd()}/${sqlFile}" // Absolute path to the file
                     
-                    // Execute each SQL file
-                    sqlFiles.each { sqlFile ->
+                    // Check if the SQL file exists
+                    if (fileExists(sqlFilePath)) {
+                        echo "Executing ${sqlFilePath}..."
                         sh """
                         snowsql --config $SNOWSQL_CONFIG_PATH \
                                 --account <your_account> \
@@ -39,8 +47,10 @@ pipeline {
                                 --warehouse <your_warehouse> \
                                 --database <your_database> \
                                 --schema <your_schema> \
-                                --execute @${sqlFile}
+                                --execute @${sqlFilePath}
                         """
+                    } else {
+                        error "SQL file ${sqlFile} not found in the workspace!"
                     }
                 }
             }
@@ -51,7 +61,7 @@ pipeline {
             echo 'Pipeline execution completed.'
         }
         success {
-            echo 'All SQL scripts executed successfully!'
+            echo 'SQL script executed successfully!'
         }
         failure {
             echo 'Pipeline execution failed. Check the logs for details.'
