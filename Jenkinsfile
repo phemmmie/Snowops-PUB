@@ -1,17 +1,13 @@
 pipeline {
     agent any
+    environment {
+        SNOWSQL_INSTALLER_URL = 'https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql'
+        SNOWSQL_CONFIG_PATH = '/home/jenkins/.snowsql'
+    }
     stages {
         stage('Setup Environment') {
             steps {
-                script {
-                    // Define environment variables
-                    env.SNOWSQL_INSTALLER_URL = 'https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql'
-                    env.SNOWSQL_CONFIG_PATH = '/home/jenkins/.snowsql'
-                }
-            }
-            steps {
                 echo 'Installing SnowSQL...'
-                // Ensure wget is installed and download SnowSQL
                 sh '''
                 if ! command -v snowsql &> /dev/null; then
                     wget $SNOWSQL_INSTALLER_URL -O /tmp/snowsql && chmod +x /tmp/snowsql && /tmp/snowsql -y
