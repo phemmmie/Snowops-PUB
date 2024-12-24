@@ -1,17 +1,22 @@
 pipeline {
     agent any
     environment {
-        SNOWSQL_INSTALLER_URL = 'https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql?raw=true'
-        SNOWSQL_INSTALLER_PATH = '/tmp/snowsql'
-        SNOWSQL_CONFIG_PATH = '/home/jenkins/.snowsql'
+        SNOWSQL_CONFIG_PATH = '/Users/Shared/.snowsql'
     }
     stages {
         stage('Setup Environment') {
             steps {
-                echo 'Installing SnowSQL...'
+                echo 'Installing SnowSQL via Homebrew...'
                 sh '''
                 if ! command -v snowsql &> /dev/null; then
-                    curl -L -o $SNOWSQL_INSTALLER_PATH $SNOWSQL_INSTALLER_URL && chmod +x $SNOWSQL_INSTALLER_PATH && $SNOWSQL_INSTALLER_PATH -y
+                    # Ensure Homebrew is installed
+                    if ! command -v brew &> /dev/null; then
+                        echo "Installing Homebrew..."
+                        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                    fi
+
+                    echo "Installing SnowSQL..."
+                    brew install --cask snowflake-snowsql
                 fi
                 '''
                 echo 'SnowSQL installation complete.'
