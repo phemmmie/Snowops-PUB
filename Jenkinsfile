@@ -3,7 +3,7 @@ pipeline {
     environment {
         SNOWSQL_PATH = '/Applications/SnowSQL.app/Contents/MacOS'
         PATH = "${SNOWSQL_PATH}:${env.PATH}" // Prepend SnowSQL path to ensure it's available
-        SNOWSQL_CONFIG_PATH = '/Users/Shared/.snowsql' // Adjust if your SnowSQL config is in a different path
+        SNOWSQL_CONFIG_PATH = '/Users/oluwafemisobakin/.snowsql' // Path to your SnowSQL config
     }
     stages {
         stage('Verify SnowSQL Installation') {
@@ -41,12 +41,6 @@ pipeline {
                         echo "Executing ${sqlFilePath}..."
                         sh """
                         snowsql --config $SNOWSQL_CONFIG_PATH \
-                                --account <your_account> \
-                                --username <your_username> \
-                                --password <your_password> \
-                                --warehouse <your_warehouse> \
-                                --database <your_database> \
-                                --schema <your_schema> \
                                 --execute @${sqlFilePath}
                         """
                     } else {
