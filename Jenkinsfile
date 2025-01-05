@@ -1,4 +1,4 @@
-[200~pipeline {
+pipeline {
     agent any
     environment {
         SNOWSQL_PATH = '/Applications/SnowSQL.app/Contents/MacOS'
