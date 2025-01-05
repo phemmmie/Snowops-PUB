@@ -1,13 +1,9 @@
-[200~pipeline {
+pipeline {
     agent any
     environment {
         SNOWSQL_PATH = '/Applications/SnowSQL.app/Contents/MacOS'
         PATH = "${SNOWSQL_PATH}:${env.PATH}" // Prepend SnowSQL path to ensure it's available
         SNOWSQL_CONFIG_PATH = '/Users/oluwafemisobakin/.snowsql/config' // Path to your SnowSQL config file
-    }
-    parameters {
-        string(name: 'DEPARTMENT', defaultValue: 'finance', description: 'Department name')
-        string(name: 'TABLE_NAME', defaultValue: 'departments', description: 'Table name to create')
     }
     stages {
         stage('Verify SnowSQL Installation') {
@@ -36,8 +32,8 @@
             steps {
                 echo 'Executing SQL script on Snowflake...'
                 script {
-                    // Construct the SQL file path dynamically based on department and table name
-                    def sqlFile = "finance/ddl/create_${params.TABLE_NAME}_table.sql"
+                    // Path to your SQL file
+                    def sqlFile = 'snow_create.sql' // The SQL file to execute
                     def sqlFilePath = "${pwd()}/${sqlFile}" // Absolute path to the file
                     
                     // Check if the SQL file exists
@@ -66,3 +62,4 @@
         }
     }
 }
+
