@@ -1,4 +1,4 @@
-CREATE TABLE finance.departments (
+CREATE TABLE finance.departments_ops (
     department_id INT IDENTITY(1,1) PRIMARY KEY,
     department_name VARCHAR(255) NOT NULL,
     department_code NUMBER(18,0),
