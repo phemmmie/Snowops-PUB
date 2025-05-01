@@ -52,3 +52,17 @@ CREATE TABLE IF NOT EXISTS finance.loan_metrics (
   next_payment_date DATE
 );
 when i run the pipeline this table was not created in snowflake
+
+
+Snowops-PUB/
+├── finance/
+│   └── ddl/
+│       ├── create_departments_table.sql
+│       └── create_budget_table.sql
+├── data_analyst/
+│   └── ddl/
+│       ├── create_users_table.sql
+│       └── create_metrics_table.sql
+└── hr/
+    └── ddl/
+        └── create_employees_table.sql
