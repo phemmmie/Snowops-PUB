@@ -14,7 +14,7 @@ INSERT INTO finance.metrics (
 );
 
 -- Add more inserts if needed
-INSERT INTO data_analyst.metrics (
+INSERT INTO finance.metrics (
     metric_id, metric_name, metric_type, value, value_type, dimension_1, source_system, description
 ) VALUES (
     'M-2023-002',
