@@ -1,4 +1,4 @@
-CREATE TABLE finance.Campaign (
+CREATE TABLE finance.campaign (
     CampaignID INT PRIMARY KEY AUTO_INCREMENT,
     CampaignName VARCHAR(255) NOT NULL,
     StartDate DATE,
