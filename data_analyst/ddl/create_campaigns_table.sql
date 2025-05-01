@@ -1,0 +1,11 @@
+CREATE TABLE finance.Campaign (
+    CampaignID INT PRIMARY KEY AUTO_INCREMENT,
+    CampaignName VARCHAR(255) NOT NULL,
+    StartDate DATE,
+    EndDate DATE,
+    Budget DECIMAL(10, 2),
+    TargetAudience TEXT,
+    Objective TEXT,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
