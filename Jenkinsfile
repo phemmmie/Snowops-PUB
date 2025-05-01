@@ -1,54 +1,67 @@
 pipeline {
     agent any
     environment {
+        // Use Jenkins credentials binding for secure config (if needed)
         SNOWSQL_PATH = '/Applications/SnowSQL.app/Contents/MacOS'
-        PATH = "${SNOWSQL_PATH}:${env.PATH}" // Prepend SnowSQL path to ensure it's available
-        SNOWSQL_CONFIG_PATH = '/Users/oluwafemisobakin/.snowsql/config' // Path to your SnowSQL config file
+        PATH = "${SNOWSQL_PATH}:${env.PATH}"
+        // Optional: Store config path in credentials store (example shown below)
+        // SNOWSQL_CONFIG_PATH = credentials('snowsql-config-path') 
     }
     parameters {
-        string(name: 'DEPARTMENT', defaultValue: 'finance', description: 'Department name')
-        string(name: 'TABLE_NAME', defaultValue: 'departments', description: 'Table name to create')
+        choice(name: 'DEPARTMENT', choices: ['finance', 'data_analyst', 'marketing', 'hr'], description: 'Select department')
+        text(name: 'TABLE_NAMES', defaultValue: 'departments,employees,budget', description: 'Comma-separated table names to create')
     }
     stages {
-        stage('Verify SnowSQL Installation') {
+        stage('Verify Prerequisites') {
             steps {
-                echo 'Checking SnowSQL installation...'
-                sh '''
-                echo "PATH: $PATH"
-                which snowsql
-                snowsql --version
-                '''
+                script {
+                    echo 'Checking SnowSQL installation...'
+                    sh '''
+                        echo "PATH: $PATH"
+                        which snowsql || { echo "SnowSQL not found"; exit 1; }
+                        snowsql --version
+                    '''
+                    
+                    echo 'Validating department directory structure...'
+                    def departmentDir = "${params.DEPARTMENT}/ddl"
+                    if (!fileExists(departmentDir)) {
+                        error "Department directory ${departmentDir} not found in repository!"
+                    }
+                }
             }
         }
+        
         stage('Clone GitHub Repository') {
             steps {
-                echo 'Cloning the SnowOps-PUB repository...'
+                echo 'Cloning SnowOps-PUB repository...'
                 git branch: 'main', url: 'https://github.com/phemmmie/Snowops-PUB.git'
             }
         }
-        stage('List Files in Workspace') {
+        
+        stage('Execute Batch SQL Scripts') {
             steps {
-                echo 'Listing files in the current workspace to check for SQL file...'
-                sh 'ls -R'
-            }
-        }
-        stage('Execute SnowSQL Script') {
-            steps {
-                echo 'Executing SQL script on Snowflake...'
                 script {
-                    // Construct the SQL file path dynamically based on department and table name
-                    def sqlFile = "finance/ddl/create_${params.TABLE_NAME}_table.sql"
-                    def sqlFilePath = "${pwd()}/${sqlFile}" // Absolute path to the file
+                    echo "Processing tables for ${params.DEPARTMENT} department..."
                     
-                    // Check if the SQL file exists
-                    if (fileExists(sqlFilePath)) {
-                        echo "Executing ${sqlFilePath}..."
-                        sh """
-                        snowsql --config $SNOWSQL_CONFIG_PATH \
-                                -f ${sqlFilePath}
-                        """
-                    } else {
-                        error "SQL file ${sqlFile} not found in the workspace!"
+                    // Convert comma-separated string to list
+                    def tables = params.TABLE_NAMES.split(/,/).collect { it.trim() }
+                    
+                    tables.each { tableName ->
+                        def sqlFile = "${params.DEPARTMENT}/ddl/create_${tableName}_table.sql"
+                        
+                        if (fileExists(sqlFile)) {
+                            echo "Executing ${sqlFile}..."
+                            try {
+                                sh """
+                                    snowsql --config ${env.SNOWSQL_CONFIG_PATH} \\
+                                            -f ${sqlFile}
+                                """
+                            } catch (Exception e) {
+                                error "Failed to execute ${sqlFile}: ${e.message}"
+                            }
+                        } else {
+                            error "SQL file ${sqlFile} not found in workspace!"
+                        }
                     }
                 }
             }
@@ -57,12 +70,16 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
+            cleanWs() // Clean workspace after execution
         }
         success {
-            echo 'SQL script executed successfully!'
+            echo 'All SQL scripts executed successfully!'
+            // Add Slack/Email notification here if needed
+            // notifySuccess()
         }
         failure {
-            echo 'Pipeline execution failed. Check the logs for details.'
+            echo 'Pipeline failed. Check logs for details.'
+            // notifyFailure()
         }
     }
 }
