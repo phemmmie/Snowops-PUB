@@ -3,7 +3,7 @@
 INSERT INTO finance.metrics (
     metric_id, metric_name, metric_type, value, value_type, dimension_1, source_system, description
 ) VALUES (
-    'M-2023-001',
+    'M-2024-001',
     'July Marketing Campaign Revenue',
     'financial',
     15000.00,
@@ -17,12 +17,12 @@ INSERT INTO finance.metrics (
 INSERT INTO finance.metrics (
     metric_id, metric_name, metric_type, value, value_type, dimension_1, source_system, description
 ) VALUES (
-    'M-2023-002',
+    'M-2025-002',
     'Q3 User Growth',
     'user_growth',
     12.5,
     'percentage',
     'Product_A',
-    'Analytics_Tool',
+    'Analytics_Stack',
     'User growth rate for Product A in Q3'
 );
