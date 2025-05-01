@@ -31,3 +31,24 @@ i choose finance as department and Table_name as departments when i run the pipe
 File 'null' does not exist.
 Try "snowsql --help" for more information.
 script returned exit code 2
+
+I created a new file name create_departments_campaign.sql in this directory SnowOps-PUB/finance/DDL and this file create_departments_campaign.sql
+has the below SQL code 
+CREATE TABLE IF NOT EXISTS finance.loan_metrics (
+ loan_id VARCHAR(255) NOT NULL,
+  customer_id VARCHAR(255) NOT NULL,
+  loan_amount DECIMAL(18, 2) NOT NULL,
+  interest_rate DECIMAL(5, 2) NOT NULL,
+  loan_term_months INTEGER NOT NULL,
+  loan_start_date DATE NOT NULL,
+  loan_end_date DATE NOT NULL,
+  loan_status VARCHAR(50) NOT NULL,
+  loan_type VARCHAR(100),
+  payment_frequency VARCHAR(50),
+  principal_balance DECIMAL(18, 2),
+  interest_paid DECIMAL(18, 2),
+  fees_paid DECIMAL(18,2),
+  last_payment_date DATE,
+  next_payment_date DATE
+);
+when i run the pipeline this table was not created in snowflake
