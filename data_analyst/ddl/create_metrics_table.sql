@@ -1,7 +1,7 @@
 -- Purpose: Store key business metrics for analyst reporting and dashboards
 -- Usage: Track KPIs like campaign performance, user engagement, revenue targets, etc.
 
-CREATE TABLE IF NOT EXISTS data_analyst.metrics (
+CREATE TABLE IF NOT EXISTS finance.metrics (
     metric_id VARCHAR(255) PRIMARY KEY,          -- Unique identifier for the metric
     metric_name VARCHAR(255) NOT NULL,           -- Human-readable name (e.g., "Monthly Revenue")
     metric_type VARCHAR(100) NOT NULL,           -- Category (e.g., "financial", "user_growth", "campaign")
