@@ -1,4 +1,4 @@
-CREATE TABLE finance.departments_ops (
+CREATE TABLE IF NOT EXISTS finance.departments_ops (
  loan_id VARCHAR(255) NOT NULL,
   customer_id VARCHAR(255) NOT NULL,
   loan_amount DECIMAL(18, 2) NOT NULL,
